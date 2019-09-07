@@ -1,4 +1,4 @@
-#!/usr/bin/python3
+#!/usr/bin/python
 #
 # Hacked from http://code.stapelberg.de/git/i3status/tree/contrib/wrapper.py
 # Initial credits go to Valentin Haenel

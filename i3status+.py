@@ -1,9 +1,13 @@
-#!/usr/bin/python2
+#!/usr/bin/python3
 #
 # Hacked from http://code.stapelberg.de/git/i3status/tree/contrib/wrapper.py
 # Initial credits go to Valentin Haenel
 #
+# This fork provides support for Python3.
+# TODO: Move from querying xset to reading leds from /dev/console.
+#
 # 2013 syl20bnr <sylvain.benner@gmail.com>
+# 2019 gertoe
 #
 # This program is free software. It comes without any warranty, to the extent
 # permitted by applicable law. You can redistribute it and/or modify it under
@@ -20,10 +24,10 @@ import time
 I3STATUS_CMD = 'i3status'
 LED_STATUSES_CMD = 'xset q | grep "LED mask"'
 LED_MASKS = [
-        ('caps',   0b0000000001,   'CAPS',   '#FF0000'),
-        ('num',    0b0000000010,    'NUM',   '#FFFF00'),
-        ('scroll', 0b0000000100, 'SCROLL',   '#0000FF'),
-        ('altgr',  0b1111101000,  'ALTGR',   '#00FF00')]
+    ('caps',   0b0000000001,   'CAPS',   '#FF0000'),
+    ('num',    0b0000000010,    'NUM',   '#FFFF00'),
+    ('scroll', 0b0000000100, 'SCROLL',   '#0000FF'),
+    ('altgr',  0b1111101000,  'ALTGR',   '#FFFFFF')]
 
 
 def get_led_statuses():
@@ -31,7 +35,7 @@ def get_led_statuses():
     statuses '''
     try:
         p = Popen(LED_STATUSES_CMD, stdout=PIPE, shell=True)
-        mask = re.search(r'[0-9]{8}', p.stdout.read())
+        mask = re.search(r'[0-9]{8}', p.stdout.read().decode('utf-8'))
         if mask:
             v = int(mask.group(0))
             return [to_dict(n, t, c) for n, m, t, c in reversed(LED_MASKS)
@@ -57,7 +61,7 @@ def read_line(process):
         line = process.stdout.readline().strip()
         if not line:
             sys.exit(3)
-        return line
+        return line.decode('utf-8')
     # exit on ctrl-c
     except KeyboardInterrupt:
         sys.exit()
@@ -80,6 +84,8 @@ if __name__ == '__main__':
         # prepend led statuses
         j = json.loads(line)
         leds = get_led_statuses()
-        [(lambda x: j.insert(0, x))(x) for x in leds]
+
+        for x in leds:
+            j.insert(0, x)
         # and echo back new encoded json
         print_line(prefix+json.dumps(j))
